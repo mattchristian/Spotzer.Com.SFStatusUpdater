@@ -9,6 +9,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SFRestApiUpdater.Extensions;
 
 namespace SFRestApiUpdater
 {
@@ -27,7 +28,6 @@ namespace SFRestApiUpdater
         {
             try
             {
-                Log.Instance.Info("Args:" + args);
                 var commands = new StatusCallCommands(new Arguments(args));
                 
                 if(!commands.IsValid())
@@ -36,6 +36,8 @@ namespace SFRestApiUpdater
                     Log.Instance.Debug("Args:" + args);
                     return;
                 }
+
+                //var dynamicObject = commands.ToDynamic();
 
                 //Get Connected Force Client - as this is called statically it will connect each time.
                 var clientTask = GetConnection();
