@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFRestApiManager", "SFRestApiManager\SFRestApiManager.csproj", "{3159AFFE-ACA8-4BE0-BF56-85128262B772}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFRestApiUpdater", "SFRestApiManager\SFRestApiUpdater.csproj", "{3159AFFE-ACA8-4BE0-BF56-85128262B772}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFRestApiManager.Tests", "SFRestApiManager.Tests\SFRestApiManager.Tests.csproj", "{CD75519F-0BC6-4150-A5DB-AB1365FECEF7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFRestApiUpdaterTests", "SFRestApiManager.Tests\SFRestApiUpdaterTests.csproj", "{CD75519F-0BC6-4150-A5DB-AB1365FECEF7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
