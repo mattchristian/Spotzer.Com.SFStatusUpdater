@@ -1,5 +1,7 @@
 ﻿using Salesforce.Common;
 using Salesforce.Force;
+using SFRestApiManager.Commands;
+using SFRestApiManager.Logging;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -21,40 +23,144 @@ namespace SFRestApiManager
         private static readonly string SandboxUrl = ConfigurationManager.AppSettings["SandboxUrl"];
         private static readonly string ProductionUrl = ConfigurationManager.AppSettings["ProductionUrl"];
 
-        static void Main()
+        static void Main(string[] args)
         {
             try
             {
-                var task = RunSample();
-                task.Wait();
+                Log.Instance.Info("Args:" + args);
+                var commands = new StatusCallCommands(new Arguments(args));
+                
+                if(!commands.IsValid())
+                {
+                    Log.Instance.Error("Error parsing incoming args.");
+                    Log.Instance.Debug("Args:" + args);
+                    return;
+                }
+
+                //Get Connected Force Client - as this is called statically it will connect each time.
+                var clientTask = GetConnection();
+                //wait until connection task has completed
+                clientTask.Wait();
+                //insert StatusCall object into SF. Aft Insert Trigger in SF will handle running the update.
+                var insertTask = InsertStatusCallToSF(clientTask.Result, 
+                    commands.Spon, 
+                    commands.ApprovalURL, 
+                    commands.Status, 
+                    commands.OrderId, 
+                    commands.TaskId, 
+                    commands.FreelancerId, 
+                    commands.IsTest, 
+                    commands.Role);
+                //wait for status call object to complete - using async and wait seems overkill here but when we extend this project to for further rest
+                //operations and integrations this will become necessary.
+                insertTask.Wait();
+
+                //var task = RunSample();
+                //task.Wait();
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
-
+                Log.Instance.Error(e.Message,e);
+                
                 var innerException = e.InnerException;
                 while (innerException != null)
                 {
-                    Console.WriteLine(innerException.Message);
-                    Console.WriteLine(innerException.StackTrace);
-
+                    Log.Instance.Error(innerException.Message, innerException);
                     innerException = innerException.InnerException;
                 }
             }
             Console.ReadKey();
         }
 
+        /// <summary>
+        /// Gets a connected (OAuth) Force Client object
+        /// </summary>
+        /// <returns>ForceClient</returns>
+        private static async Task<IForceClient> GetConnection()
+        {
+            var auth = new AuthenticationClient();
+            
+            var url = IsSandboxUser.Equals("true", StringComparison.CurrentCultureIgnoreCase)
+                ? SandboxUrl
+                : ProductionUrl;
+            
+            Log.Instance.Info(String.Format("Authenticating with Salesforce on URL:{0}",url));
+            Log.Instance.Debug(String.Format("ConsumerKey:{0}|ConsumerSecret:{1}|Username:{2}|Password:{3}", ConsumerKey, ConsumerSecret, Username, Password));
+            
+            await auth.UsernamePasswordAsync(ConsumerKey, ConsumerSecret, Username, Password, url);
+            
+            Log.Instance.Info("Connected to Salesforce.");
+            Log.Instance.Debug(String.Format("AuthClient values|InstanceURL:{0}|AccessToken:{1}|ApiVerison:{2}", auth.InstanceUrl, auth.AccessToken, auth.ApiVersion));
+            
+            var client = new ForceClient(auth.InstanceUrl, auth.AccessToken, auth.ApiVersion);
+            
+            return client;
+        }
+
+        /// <summary>
+        /// Inserts a StatusCall Object to SF.
+        /// </summary>
+        /// <param name="client">The authenticated ForceClient Implementation of IForceClient </param>
+        /// <param name="spon">The Spotzer Purchase Order Number</param>
+        /// <param name="approvalUrl">Web Approval URL</param>
+        /// <param name="status">Status</param>
+        /// <param name="orderId">Salesforce Order.Id</param>
+        /// <param name="taskId">Salesforce Task.Id</param>
+        /// <param name="freelancerId">Salesforce Freelancer.Id</param>
+        /// <param name="isTest">If true - transaction will be rolled back after completion</param>
+        /// <param name="encryptedRole">Salesforce role identifier</param>
+        /// <returns>String version of Id of Record to be inserted.</returns>
+        private static async Task<String> InsertStatusCallToSF(IForceClient client, string spon, string approvalUrl, int? status, string orderId, string taskId, string freelancerId, bool? isTest, string encryptedRole)
+        {
+            //Create a custom Record
+            Log.Instance.Info(String.Format("Inserting Statuscall_Log__c (Spon={0},approvalUrl={1},status={2},orderId={3},taskId={4},freelancerId={5},isTest={6},encryptedRole={7})",spon, approvalUrl, status, orderId, taskId, freelancerId, isTest, encryptedRole));
+            
+            //Tidy up - this can be created else where and this function made more generic.
+            dynamic statusUpdate = new ExpandoObject();
+            statusUpdate.SPON__c = spon;
+            statusUpdate.encryptedRole__c = encryptedRole;
+            statusUpdate.freelancerId__c = freelancerId;
+            statusUpdate.isTest__c = isTest;
+            statusUpdate.orderId__c = orderId;
+            statusUpdate.Status__c = status;
+            statusUpdate.taskId__c = taskId;
+            statusUpdate.ApprovalURL__c = approvalUrl;
+            statusUpdate.ProcessOnInsert__c = true;
+            
+            string recordId = await client.CreateAsync("Statuscall_Log__c", statusUpdate);
+            
+            if (String.IsNullOrEmpty(recordId))
+            {
+                Log.Instance.Info("Failed to create custom test record.");
+                return null;
+            }
+            
+            Log.Instance.Info("StatusCall ID:" + recordId);
+            return recordId;
+        }
+
+        private static Dictionary<String,String> ParseArgs(String[] args)
+        {
+            Dictionary<String, String> commands = new Dictionary<String, String>();
+            foreach (String arg in args)
+            {
+                String[] words = arg.Split('=');
+                commands[words[0]] = words[1];
+            }
+            return commands;
+        }
+
+        /*
         private static async Task RunSample()
         {
             var auth = new AuthenticationClient();
 
             // Authenticate with Salesforce
             Console.WriteLine("Authenticating with Salesforce");
-            /*var url = IsSandboxUser.Equals("true", StringComparison.CurrentCultureIgnoreCase)
-                ? "https://test.salesforce.com/services/oauth2/token"
-                : "https://eu5.salesforce.com/services/oauth2/token";
-            */
+            //var url = IsSandboxUser.Equals("true", StringComparison.CurrentCultureIgnoreCase)
+            //    ? "https://test.salesforce.com/services/oauth2/token"
+            //    : "https://eu5.salesforce.com/services/oauth2/token";
+            
             var url = IsSandboxUser.Equals("true", StringComparison.CurrentCultureIgnoreCase)
                 ? SandboxUrl
                 : ProductionUrl;
@@ -67,7 +173,7 @@ namespace SFRestApiManager
             // retrieve all accounts
             Console.WriteLine("Get Accounts");
 
-            const string qry = "SELECT ID, Name FROM Account";
+            const string qry = "SELECT ID, Name FROM Account limit 1000";
             var accts = new List<Account>();
             var results = await client.QueryAsync<Account>(qry);
             var totalSize = results.totalSize;
@@ -95,6 +201,25 @@ namespace SFRestApiManager
                 }
             }
             Console.WriteLine("Retrieved accounts = " + accts.Count() + ", expected size = " + totalSize);
+
+            //Create a custom Record
+            Console.WriteLine("Creating custom test record.");
+            dynamic statusUpdate = new ExpandoObject();
+            statusUpdate.SPON__c = "999999999";
+            statusUpdate.encryptedRole__c = "";
+            statusUpdate.freelancerId__c = "";
+            statusUpdate.isTest__c = false;
+            statusUpdate.orderId__c = "";
+            statusUpdate.Status__c = 0;
+            statusUpdate.taskId__c = "";
+            statusUpdate.ApprovalURL__c = "https://www.someapprovalurl.com";
+
+            string Id = await client.CreateAsync("Statuscall_Log__c", statusUpdate);
+            if(String.IsNullOrEmpty(Id))
+            {
+                Console.WriteLine("Failed to create custom test record.");
+                return;
+            }
 
             // Create a sample record
             Console.WriteLine("Creating test record.");
@@ -205,7 +330,7 @@ namespace SFRestApiManager
 
             public String Id { get; set; }
             public String Name { get; set; }
-        }
+        }*/
     }
 
 }
