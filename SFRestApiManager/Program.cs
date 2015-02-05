@@ -69,7 +69,6 @@ namespace SFRestApiUpdater
                     innerException = innerException.InnerException;
                 }
             }
-            Console.ReadKey();
         }
 
         /// <summary>

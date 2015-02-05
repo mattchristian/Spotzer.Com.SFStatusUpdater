@@ -39,9 +39,7 @@ namespace SFRestApiUpdater.Commands
     
         public Boolean IsValid()
         {
-            if (Spon == null) return false;
-            if (Status == null) return false;
-            if (IsTest == null) return false;
+            if (String.IsNullOrEmpty(Spon)) return false;
             if (ApprovalURL == null) return false;
             if (OrderId == null) return false;
             if (FreelancerId == null) return false;
