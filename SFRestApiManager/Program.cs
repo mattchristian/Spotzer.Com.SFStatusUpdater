@@ -1,7 +1,7 @@
 ﻿using Salesforce.Common;
 using Salesforce.Force;
-using SFRestApiManager.Commands;
-using SFRestApiManager.Logging;
+using SFRestApiUpdater.Commands;
+using SFRestApiUpdater.Logging;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SFRestApiManager
+namespace SFRestApiUpdater
 {
     class Program
     {

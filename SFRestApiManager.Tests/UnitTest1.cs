@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace SFRestApiManager.Tests
+namespace SFRestApiUpdater.Tests
 {
     [TestClass]
     public class UnitTest1

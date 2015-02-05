@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NLog;
 
-namespace SFRestApiManager.Logging
+namespace SFRestApiUpdater.Logging
 {
     internal static class Log
     {

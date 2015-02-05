@@ -6,7 +6,7 @@
     <ProjectGuid>{CD75519F-0BC6-4150-A5DB-AB1365FECEF7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SFRestApiManager.Tests</RootNamespace>
+    <RootNamespace>SFRestApiUpdater.Tests</RootNamespace>
     <AssemblyName>SFRestApiManager.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

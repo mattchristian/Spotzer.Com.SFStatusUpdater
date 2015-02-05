@@ -7,7 +7,7 @@
     <ProjectGuid>{3159AFFE-ACA8-4BE0-BF56-85128262B772}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SFRestApiManager</RootNamespace>
+    <RootNamespace>SFRestApiUpdater</RootNamespace>
     <AssemblyName>SFRestApiManager</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
