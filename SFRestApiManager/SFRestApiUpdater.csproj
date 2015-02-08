@@ -104,6 +104,7 @@
     <Compile Include="Commands\Arguments.cs" />
     <Compile Include="Commands\StatusCallCommands.cs" />
     <Compile Include="Extensions\DynamicExtensions.cs" />
+    <Compile Include="Extensions\SalesforceAttribute.cs" />
     <Compile Include="Logging\Log.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

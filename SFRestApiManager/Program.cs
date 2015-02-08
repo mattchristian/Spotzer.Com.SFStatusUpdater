@@ -98,6 +98,20 @@ namespace SFRestApiUpdater
             return client;
         }
 
+        private static async Task<String> InsertObjectToSF(IForceClient client, ExpandoObject objectToInsert, String objectName)
+        {
+            String returnId = await client.CreateAsync(objectName, objectToInsert);
+
+            if (String.IsNullOrEmpty(returnId))
+            {
+                Log.Instance.Info(String.Format("Failed to create {0} record.",objectName));
+                return null;
+            }
+
+            Log.Instance.Info(String.Format("{0} ID: {1}",objectName,returnId));
+            return returnId;
+        }
+
         /// <summary>
         /// Inserts a StatusCall Object to SF.
         /// </summary>
